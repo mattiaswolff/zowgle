@@ -1,0 +1,13 @@
+include navigation
+include control
+.container-fluid
+	.row-fluid
+		.span12
+			h1 Controllers
+			p.lead	Use these controllers to control your devices...
+			ul.thumbnails
+				each item in pageData.id
+					.span3
+						mixin control(item)					
+
+include js
