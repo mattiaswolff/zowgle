@@ -51,7 +51,42 @@ io.sockets.on 'connection', (wsSocket) ->
 		message = JSON.parse(message)
 		console.log "Message from " + wsSocket.id + ": "
 		console.log "deviceId: " + message.id
-		console.log "state:" + message.state
+		console.log "controllers:" + message.controllers
+		redis.get "device:" + message.id, (error, reply) ->
+			if !reply
+				console.log "error: " + error
+				redis.set "device:" + message.id, JSON.stringify(message)
+				redis.sadd "device:" + message.id + ":sessions", wsSocket.id
+				console.log "insert done."
+			else
+				object = JSON.parse(reply)
+				console.log "test1 " + message.controllers
+
+				for key, value of message.controllers
+					object.controllers[key] = value
+					console.log "update " + key + "..."
+				
+				console.log "insert updated object to redis..."
+				redis.set "device:" + message.id, JSON.stringify(object)
+
+				redis.smembers "device:" + message.id + ":sessions", (error, reply) ->
+
+					if wsSocket.id not in reply
+						console.log "add sessionId to subscribers for device..."
+						redis.sadd "device:" + message.id + ":sessions", wsSocket.id
+						reply += wsSocket.id
+					console.log  "Looping trough all sockets..."
+					console.log "reply: " + reply
+					for i in [0 .. sockets.length - 1]
+						if (sockets[i].id.toString() in reply)
+							if sockets[i].type == "ws"
+								console.log "WS socket found, sending object.."
+								sockets[i].emit "message", JSON.stringify object
+							else if sockets[i].type == "tcp"
+								console.log "TCP socket found, sending object.."
+								sockets[i].write JSON.stringify object
+				# TODO: Create function for sending objects to all subscribers.
+
 		m = []
 		m[0] = "hej"
 		if (m[0] == "id")
@@ -93,6 +128,8 @@ app.configure 'production', ->
 
 app.get '/', routes.index
 #HTTP server 		- 	END
+
+
 
 console.log "TCP server listening on port 7000 at localhost"
 console.log "WS / HTTP server listening on port 8080 at localhost"

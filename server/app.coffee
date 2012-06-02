@@ -78,5 +78,6 @@ app.configure ->
 app.get "/", (req, res) -> res.render '/index.jade'
 #HTTP server 		- 	END
 
+# TODO: Change comments
 console.log "TCP server listening on port 7000 at localhost"
 console.log "WS / HTTP server listening on port 8080 at localhost"

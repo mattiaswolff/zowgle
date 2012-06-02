@@ -25,7 +25,9 @@
     var message, myData;
     myData = {
       id: "123456",
-      state: data
+      controllers: {
+        state: data
+      }
     };
     message = JSON.stringify(myData);
     console.log("sending.." + message);

@@ -15,7 +15,9 @@ socket.on "message", (message) ->
 @sendState = (id, data) -> 
 	myData =
     	id: "123456"
-    	state: data
+    	controllers:
+    		state: data
+    		
 	message = JSON.stringify myData 
 	console.log "sending.." + message
 	socket.send message
