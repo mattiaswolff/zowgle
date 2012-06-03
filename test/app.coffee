@@ -86,27 +86,13 @@ io.sockets.on 'connection', (wsSocket) ->
 								console.log "TCP socket found, sending object.."
 								sockets[i].write JSON.stringify object
 				# TODO: Create function for sending objects to all subscribers.
-
-		m = []
-		m[0] = "hej"
-		if (m[0] == "id")
-			redis.sadd "device:" + m[1] + ":sessions", wsSocket.id
-			wsSocket.deviceId = m[1]
-		else if (m[0] == "state")
-			redis.hset "device:" + wsSocket.deviceId, "state", m[1]
-			redis.smembers "device:" + wsSocket.deviceId + ":sessions", (err, reply) ->
-				for i in [0 .. sockets.length - 1]
-					if (sockets[i].id.toString() in reply)
-						if sockets[i].type == "ws"
-							sockets[i].emit "message", "state:" + m[1]
-						else if sockets[i].type == "tcp"
-						  	sockets[i].write("state:" + m[1])
-
+				
 	wsSocket.on 'disconnect', ->
 		for i in [0 .. sockets.length - 1]
 			if wsSocket.id == sockets[i].id
 				sockets.splice(i,1)
 				break
+		# TODO: Remove socket from redis list.
 #WS server 			- 	END
 
 #HTTP server 		- 	START

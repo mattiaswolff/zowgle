@@ -10,7 +10,8 @@
 
   socket.on("message", function(message) {
     console.log("Message from server: " + message);
-    message = message.split(":");
+    message = JSON.parse(message);
+    $('#' + message.id).text(message.controllers.state);
     if (message[0] === "state") {
       $('#switch button').removeClass('active');
       if (message[1] === "on") {
