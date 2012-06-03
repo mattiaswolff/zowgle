@@ -47,7 +47,7 @@ class DeviceView extends Backbone.View
                 value: $(e.target).val()}
             ]
                 
-        # @model.save "option"
+        # @model.save "option" "test"
 
     events: 'click .device button': 'updateControl'
 
