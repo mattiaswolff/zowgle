@@ -13,13 +13,8 @@ socket.on "message", (message) ->
 		else if message[1] == "off"
 		  	$('#switch button[value=off]').addClass('active')
 
-@sendState = (id, data) -> 
-	myData =
-    	id: "123456"
-    	controllers:
-    		state: data
-    		
-	message = JSON.stringify myData 
+@sendState = (data) -> 
+	message = JSON.stringify data 
 	console.log "sending.." + message
 	socket.send message
 	console.log "sending completed"
