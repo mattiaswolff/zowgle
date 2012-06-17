@@ -4,6 +4,7 @@ socket.on "connect", ->
 
 # Models
 class Device extends Backbone.Model
+    url: '/device'
 
 class Controller extends Backbone.Model
 
@@ -119,7 +120,7 @@ class DevicesView extends Backbone.View
             id: $('#addNewDevice input[name="id"]').val()
             name: $('#addNewDevice input[name="name"]').val()
             controllers: controllers
-        
+        device.save()
         @devices.add(device)
 
     appendDevice: (device) ->
@@ -139,7 +140,7 @@ Backbone.sync = (method, model, options) ->
 
     namespace = getUrl(model).split('/')[1]
     
-    params = _.extend(req: namespace + ':' + method)
+    params = _.extend(req: namespace + ':' + method, data: JSON.stringify(model))
     # if ( !params.data && model ) {
     #     params.data = model.toJSON() || {};
     # }

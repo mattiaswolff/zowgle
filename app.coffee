@@ -51,9 +51,19 @@ io.sockets.on 'connection', (wsSocket) ->
 		console.log "devices:read recieved"
 		console.log data
 		console.log fn
+
 		fn data: "some random data"
 		wsSocket.emit "devices:read", "testar"
-	wsSocket.on 'message', (message) ->
+	
+	wsSocket.on 'device:update2', (data, fn) ->
+		console.log "device:update recieved"
+		console.log data
+		console.log fn
+
+		fn data: "some random data"
+		wsSocket.emit "device:update", "testar"
+
+	wsSocket.on 'device:update', (message, fn) ->
 		message = JSON.parse(message)
 
 		console.log "Message from " + wsSocket.id + ": "
@@ -66,8 +76,8 @@ io.sockets.on 'connection', (wsSocket) ->
 				console.log "error: " + error
 				redis.set "device:" + message.id, JSON.stringify(message)
 				redis.sadd "device:" + message.id + ":sessions", wsSocket.id
+			
 			else
-				
 				object = JSON.parse(reply)
 				console.log "test1 " + message.controllers
 
@@ -130,8 +140,6 @@ app.configure 'production', ->
 
 app.get '/', routes.index
 #HTTP server 		- 	END
-
-
 
 console.log "TCP server listening on port 7000 at localhost"
 console.log "WS / HTTP server listening on port 8080 at localhost"
