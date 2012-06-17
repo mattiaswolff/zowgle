@@ -47,6 +47,12 @@ io.sockets.on 'connection', (wsSocket) ->
 	sockets.push(wsSocket)
 	console.log "New WS connection!"
 	
+	wsSocket.on 'devices:read', (data, fn) ->
+		console.log "devices:read recieved"
+		console.log data
+		console.log fn
+		fn data: "some random data"
+		wsSocket.emit "devices:read", "testar"
 	wsSocket.on 'message', (message) ->
 		message = JSON.parse(message)
 
