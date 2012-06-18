@@ -5,12 +5,27 @@ socket.on "connect", ->
 # Models
 class Device extends Backbone.Model
     url: '/device'
+    initialize: ->
+        console.log "Device model created..."
+        @set
+            controllers: new Controllers
+
+    saveModel: ->
+        console.log "save Device model..."
 
 class Controller extends Backbone.Model
+    initialize: ->
+        @bind 'change', @test
+    test: ->
+        console.log "test"
 
 # Collections
 class Controllers extends Backbone.Collection
     model: Controller
+    initialize: ->
+        @bind 'change', @test
+    test: ->
+        console.log "test2"
 
 class Devices extends Backbone.Collection
     model: Device
@@ -26,11 +41,16 @@ class ControllerView extends Backbone.View
 
     render: ->
         $(@el).html("#{@model.get('name')}: <div class='btn-group' data-toggle='buttons-radio'>
-            <button class='btn'>On</button>
-            <button class='btn'>Off</button>
+            <button class='btn' value='On'>On</button>
+            <button class='btn' value='Off'>Off</button>
             </div>")
-        
         @
+
+    updateControl: (e) ->
+        @model.set 
+            value: "off"
+
+    events: 'click button': 'updateControl'
 
 class ControllersView extends Backbone.View
     tagName: 'ul'
@@ -39,7 +59,6 @@ class ControllersView extends Backbone.View
     initialize: ->
         console.log "Init ControllersView"
         _.bindAll @
-
     render: ->
         self = @        
         @model.each (model) -> 
@@ -66,23 +85,10 @@ class DeviceView extends Backbone.View
             <p>Like you, we love building awesome products on the web.</p>")
         
         controllers_view = new ControllersView model: @model.get('controllers')
-
         $(@el).append controllers_view.render().el
 
-        @
-
-    updateControl: (e) ->
-        @model.set 
-            id: $(@el).attr('id')
-            controllers: [
-                {name: "state"
-                value: $(e.target).val()}
-            ]
-                
+        @                
         # @model.save "option" "test"
-
-    events: 'click .device button': 'updateControl'
-
 
 class DevicesView extends Backbone.View
 
@@ -109,17 +115,16 @@ class DevicesView extends Backbone.View
         device = new Device
         controller = new Controller
         controller1 = new Controller
-        controllers = new Controllers [controller, controller1]
         controller.set
-            name: "state"
+            name: "state1"
             value: "on"
         controller1.set
-            name: "state"
+            name: "state2"
             value: "on"
         device.set 
             id: $('#addNewDevice input[name="id"]').val()
             name: $('#addNewDevice input[name="name"]').val()
-            controllers: controllers
+            controllers: [controller, controller1]
         device.save()
         @devices.add(device)
 
