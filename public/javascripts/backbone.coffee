@@ -5,25 +5,35 @@ socket.on "connect", ->
 # Models
 class Device extends Backbone.Model
     url: '/device'
+    
     initialize: ->
+        _.bindAll @
         console.log "Device model created..."
         @set
             controllers: new Controllers
 
+        @get('controllers').bind 'change', @saveModel
+    
     saveModel: ->
         console.log "save Device model..."
+        @.save()
+
 
 class Controller extends Backbone.Model
+    
     initialize: ->
         @bind 'change', @test
+    
     test: ->
         console.log "test"
 
 # Collections
 class Controllers extends Backbone.Collection
     model: Controller
+    
     initialize: ->
         @bind 'change', @test
+    
     test: ->
         console.log "test2"
 
@@ -48,7 +58,7 @@ class ControllerView extends Backbone.View
 
     updateControl: (e) ->
         @model.set 
-            value: "off"
+            value: e.currentTarget.value
 
     events: 'click button': 'updateControl'
 
@@ -59,6 +69,7 @@ class ControllersView extends Backbone.View
     initialize: ->
         console.log "Init ControllersView"
         _.bindAll @
+    
     render: ->
         self = @        
         @model.each (model) -> 
@@ -124,7 +135,7 @@ class DevicesView extends Backbone.View
         device.set 
             id: $('#addNewDevice input[name="id"]').val()
             name: $('#addNewDevice input[name="name"]').val()
-            controllers: [controller, controller1]
+        device.get('controllers').add([controller, controller1])
         device.save()
         @devices.add(device)
 
