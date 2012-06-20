@@ -164,8 +164,10 @@ Backbone.sync = (method, model, options) ->
     # If your socket.io connection exists on a different var, change here:
     # io = model.socket || window.socket || Backbone.socket || socket;
 
-    socket.emit namespace + ':' + method, params.data, (err, data) ->
+    socket.emit namespace + ':' + method, params.data, (data, err) ->
         console.log ('syncing...')
+        console.log "data: " + JSON.stringify data.data
+        console.log "err: " + err
         if (err)
             options.error(err)
         else

@@ -48,13 +48,21 @@ io.sockets.on 'connection', (wsSocket) ->
 	console.log "New WS connection!"
 	
 	wsSocket.on 'devices:read', (data, fn) ->
-		console.log "devices:read recieved"
-		console.log data
-		console.log fn
-
-		fn data: "some random data"
-		wsSocket.emit "devices:read", "testar"
-	
+		redis.keys "device:object:*", (error, reply) ->
+			console.log "redis keys: " + reply
+			devices = []
+			key_length = reply.length - 1
+			reply.forEach (key, i) ->
+				console.log "key: " + key
+				console.log "i: " + i
+				console.log "reply length: " +  reply.length
+				redis.get key, (error, reply) ->
+					devices.push JSON.parse reply
+					console.log "length: " + key_length
+					if i == key_length
+						console.log "data: " + devices
+						fn data: JSON.stringify devices
+		
 	wsSocket.on 'device:update2', (data, fn) ->
 		console.log "device:update recieved"
 		console.log data
@@ -74,8 +82,8 @@ io.sockets.on 'connection', (wsSocket) ->
 			
 			if !reply
 				console.log "error: " + error
-				redis.set "device:" + message.id, JSON.stringify(message)
-				redis.sadd "device:" + message.id + ":sessions", wsSocket.id
+				redis.set "device:object:" + message.id, JSON.stringify(message)
+				redis.sadd "device:sessions:" + message.id, wsSocket.id
 			
 			else
 				object = JSON.parse(reply)
@@ -92,12 +100,12 @@ io.sockets.on 'connection', (wsSocket) ->
 				
 				console.log "insert updated object to redis..."
 
-				redis.set "device:" + message.id, JSON.stringify(object)
-				redis.smembers "device:" + message.id + ":sessions", (error, reply) ->
+				redis.set "device:object:" + message.id, JSON.stringify(object)
+				redis.smembers "device:sessions:" + message.id, (error, reply) ->
 
 					if wsSocket.id not in reply
 						console.log "add sessionId to subscribers for device..."
-						redis.sadd "device:" + message.id + ":sessions", wsSocket.id
+						redis.sadd "device:sessions:" + message.id, wsSocket.id
 						reply += wsSocket.id
 
 					console.log  "Looping trough all sockets..."
