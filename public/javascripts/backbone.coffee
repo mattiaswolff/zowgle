@@ -3,29 +3,44 @@ socket.on "connect", ->
     console.log "connected"
 
 # Models
+class Controller extends Backbone.Model
+    
+    # initialize: ->
+    #     @bind 'change', @test
+    
+    # test: ->
+    #     console.log "test"
+
 class Device extends Backbone.Model
     url: '/device'
     
+    # relations: [{
+    #     type: Backbone.HasMany,
+    #     key: 'controllers',
+    #     relatedModel: Controller,
+    #     collectionType: Controllers
+    # }]
+    # Device.setup()
+    parse: (resp, xhr) ->
+        # manage controllers
+        @controllers = resp.controllers
+        delete resp.controllers
+        return resp
+
     initialize: ->
         _.bindAll @
         console.log "Device model created..."
+        
         @set
             controllers: new Controllers
+        @get('controllers').reset(@controllers)
+        delete @controllers
 
         @get('controllers').bind 'change', @saveModel
     
     saveModel: ->
         console.log "save Device model..."
         @.save()
-
-
-class Controller extends Backbone.Model
-    
-    initialize: ->
-        @bind 'change', @test
-    
-    test: ->
-        console.log "test"
 
 # Collections
 class Controllers extends Backbone.Collection
@@ -54,6 +69,8 @@ class ControllerView extends Backbone.View
             <button class='btn' value='On'>On</button>
             <button class='btn' value='Off'>Off</button>
             </div>")
+
+        $(@el).children('div').children("button[value=#{@model.get('value')}]").addClass('active')
         @
 
     updateControl: (e) ->
@@ -111,7 +128,8 @@ class DevicesView extends Backbone.View
         
         @devices = new Devices
         @devices.bind 'add', @appendDevice
-        @addAll()
+        @devices.bind 'reset', @testar
+        @devices.fetch()
         @render()
 
     render: ->
@@ -120,7 +138,7 @@ class DevicesView extends Backbone.View
         <input type="text" name="id" placeholder="Add the Id of the device..." />
         <input type="text" name="name" placeholder="Add a name.." />
         <button class="btn">Add device</button></li>'
-
+        
     addDevice: ->
         console.log "Add Device"
         device = new Device
@@ -147,6 +165,13 @@ class DevicesView extends Backbone.View
     addAll: ->
         @devices.fetch()
 
+    testar: ->
+        console.log "testar: " + @devices
+        self = @el      
+        @devices.each (device) -> 
+            device_view = new DeviceView model: device
+            $(self).append device_view.render().el
+
     events: 'click #addNewDevice button': 'addDevice'
 
 # Sync
@@ -171,6 +196,6 @@ Backbone.sync = (method, model, options) ->
         if (err)
             options.error(err)
         else
-            options.success(data)
+            options.success JSON.parse data.data
 
 devices_view = new DevicesView
