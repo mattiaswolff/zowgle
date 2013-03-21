@@ -5,6 +5,8 @@ app = module.exports = express.createServer();
 io = require('socket.io').listen(app)
 redis = require("redis").createClient()
 
+console.log "This is the start"
+
 app.listen 8080
 tcpServer.listen 7000
 
