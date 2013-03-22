@@ -80,7 +80,7 @@ io.sockets.on 'connection', (wsSocket) ->
 		console.log "deviceId: " + message.id
 		console.log "controllers:" + message.controllers
 		
-		redis.get "device:" + message.id, (error, reply) ->
+		redis.get "device:object:" + message.id, (error, reply) ->
 			
 			if !reply
 				console.log "error: " + error
